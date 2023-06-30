@@ -20,7 +20,7 @@ const AuthModal = () => {
         if (session) {
             router.refresh();
             onClose();
-            toast.success('Login!')
+            toast.success(`You're in!`)
         }
     }, [session, router, onClose])
 
