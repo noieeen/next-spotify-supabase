@@ -9,7 +9,7 @@ import Button from "./Button";
 // auth
 import useAuthModal from "@/hooks/useAuthModal";
 import { useSupabaseClient } from "@supabase/auth-helpers-react";
-import { userUser } from "@/hooks/useUser";
+import { useUser } from "@/hooks/useUser";
 import { FaUserAlt } from "react-icons/fa";
 import { toast } from "react-hot-toast";
 
@@ -23,7 +23,7 @@ const Header: React.FC<HeaderProps> = ({ children, className }) => {
     const authModal = useAuthModal();
     const router = useRouter();
     const supabaseClient = useSupabaseClient();
-    const { user, subscription } = userUser();
+    const { user, subscription } = useUser();
 
     const handleLogout = async () => {
         const { error } = await supabaseClient.auth.signOut();

@@ -5,7 +5,7 @@ import { useState } from "react";
 import Input from "./Input";
 import Button from "./Button";
 import { toast } from "react-hot-toast";
-import { userUser } from "@/hooks/useUser";
+import { useUser } from "@/hooks/useUser";
 import uniqid from 'uniqid'
 import { useSupabaseClient } from "@supabase/auth-helpers-react";
 import { useRouter } from "next/navigation";
@@ -15,7 +15,7 @@ const UploadModal = () => {
 
     const [isLoading, setIsLoading] = useState(false)
     const uploadModal = useUploadModal();
-    const { user } = userUser();
+    const { user } = useUser();
     const supabaseClient = useSupabaseClient();
     const router = useRouter();
 
