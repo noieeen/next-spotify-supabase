@@ -57,15 +57,25 @@ const PlayerContent: React.FC<PlayerContentProps> = ({ song, songUrl }) => {
   // play sound
   const [play, { pause, sound }] = useSound(songUrl, {
     volume: volume,
-    onplay: () => setIsPlaying(true),
+    // sprite: { song: [10, 100] },
+    onplay: (value: any) => {
+      setIsPlaying(true);
+      console.log("onplay", value);
+    },
+    onpause: (value: any) => {
+      setIsPlaying(false);
+      console.log("onpause", value);
+    },
     onend: () => {
       setIsPlaying(false);
       onPlayNext();
     },
-    onpause: () => setIsPlaying(false),
+    // onpause: () => setIsPlaying(false),
+    onseek: () => {},
     format: ["mp3"],
   });
-
+  const testSong = useSound(songUrl);
+  console.log("useSond", sound);
   useEffect(() => {
     sound?.play();
 
