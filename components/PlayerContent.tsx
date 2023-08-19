@@ -7,6 +7,7 @@ import { AiFillStepBackward, AiFillStepForward } from "react-icons/ai";
 import { HiSpeakerWave, HiSpeakerXMark } from "react-icons/hi2";
 import Slider from "./Slider";
 import usePlayer from "@/hooks/usePlayer";
+import useVolume from "@/hooks/useVolume";
 import { useEffect, useState } from "react";
 import useSound from "use-sound";
 
@@ -17,17 +18,21 @@ interface PlayerContentProps {
 
 const PlayerContent: React.FC<PlayerContentProps> = ({ song, songUrl }) => {
   const player = usePlayer();
-  const [volume, setVolume] = useState(1);
+  const volume = useVolume();
+  // const [volume, setVolume] = useState(1);
   const [isPlaying, setIsPlaying] = useState(false);
   const [seekerValue, setSeekerValue] = useState(0);
   const [currentTime, setCurrentTime] = useState("00:00");
   const [playingId, setPlayingId] = useState(0);
+
   // icons
   const Icon = isPlaying ? BsPauseFill : BsPlayFill;
-  const VolumeIcon = volume === 0 ? HiSpeakerXMark : HiSpeakerWave;
+  const VolumeIcon = volume.volume === 0 ? HiSpeakerXMark : HiSpeakerWave;
 
   // next song
   const onPlayNext = () => {
+    sound.unload();
+
     if (player.ids.length === 0) {
       return;
     }
@@ -44,6 +49,7 @@ const PlayerContent: React.FC<PlayerContentProps> = ({ song, songUrl }) => {
 
   // previous
   const onPlayPrevious = () => {
+    sound.unload();
     if (player.ids.length === 0) {
       return;
     }
@@ -61,7 +67,7 @@ const PlayerContent: React.FC<PlayerContentProps> = ({ song, songUrl }) => {
   // play sound
 
   const [play, { duration, pause, sound }] = useSound(songUrl, {
-    volume: volume,
+    volume: volume.volume,
     onplay: (id: number) => {
       setIsPlaying(true);
       setPlayingId(id);
@@ -90,19 +96,16 @@ const PlayerContent: React.FC<PlayerContentProps> = ({ song, songUrl }) => {
   // mute control
 
   const toggleMute = () => {
-    if (volume === 0) {
-      setVolume(1);
+    if (volume.volume === 0) {
+      volume.setVolume(1);
     } else {
-      setVolume(0);
+      volume.setVolume(0);
     }
   };
 
-  // seek
+  // Seek the audio to the desired position when the user changes the seeker
   const handleSeekerChange = (seekTime: number) => {
-    // Seek the audio to the desired position when the user changes the seeker
     if (!duration) return;
-    console.log("on seek", (duration * seekTime) / 1000);
-
     const seekPosition = (duration * seekTime) / 1000;
     sound.seek(seekPosition);
   };
@@ -122,7 +125,6 @@ const PlayerContent: React.FC<PlayerContentProps> = ({ song, songUrl }) => {
       currentTime = sound.seek(playingId);
       setCurrentTime(formatTime(currentTime * 1000));
       setSeekerValue((currentTime / duration) * 1000);
-      console.log("updateSeekerAndTime", (currentTime / duration) * 1000);
     }
   };
 
@@ -186,7 +188,10 @@ const PlayerContent: React.FC<PlayerContentProps> = ({ song, songUrl }) => {
             className="cursor-pointer"
             size={24}
           />
-          <Slider value={volume} onChange={(volume) => setVolume(volume)} />
+          <Slider
+            value={volume.volume}
+            onChange={(value) => volume.setVolume(value)}
+          />
         </div>
       </div>
     </div>
