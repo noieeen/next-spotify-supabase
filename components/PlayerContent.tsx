@@ -2,14 +2,17 @@
 import { Song } from "@/types";
 import MediaItem from "./MediaItem";
 import LikeButton from "./LikeButton";
-import { BsPauseFill, BsPlayFill } from "react-icons/bs";
-import { AiFillStepBackward, AiFillStepForward } from "react-icons/ai";
-import { HiSpeakerWave, HiSpeakerXMark } from "react-icons/hi2";
 import Slider from "./Slider";
 import usePlayer from "@/hooks/usePlayer";
 import useVolume from "@/hooks/useVolume";
 import { useEffect, useState } from "react";
 import useSound from "use-sound";
+
+// icons
+import { BsPauseFill, BsPlayFill } from "react-icons/bs";
+import { AiFillStepBackward, AiFillStepForward } from "react-icons/ai";
+import { HiSpeakerWave, HiSpeakerXMark } from "react-icons/hi2";
+import { PulseLoader } from "react-spinners";
 
 interface PlayerContentProps {
   song: Song;
@@ -72,7 +75,6 @@ const PlayerContent: React.FC<PlayerContentProps> = ({ song, songUrl }) => {
       setIsPlaying(true);
       setPlayingId(id);
     },
-    onplaying: () => {},
     onpause: () => {
       setIsPlaying(false);
     },
@@ -80,7 +82,6 @@ const PlayerContent: React.FC<PlayerContentProps> = ({ song, songUrl }) => {
       setIsPlaying(false);
       onPlayNext();
     },
-    onseek: () => {},
     format: ["mp3"],
   });
 
@@ -173,7 +174,11 @@ const PlayerContent: React.FC<PlayerContentProps> = ({ song, songUrl }) => {
             onClick={handlePlay}
             className="flex items-center justify-center h-10 w-10 rounded-full bg-white p-1 cursor-pointer"
           >
-            <Icon size={30} className="text-black" />
+            {playingId == 0 ? (
+              <PulseLoader size={5} color="#22c55e" />
+            ) : (
+              <Icon size={30} className="text-black" />
+            )}
           </div>
           <AiFillStepForward
             onClick={onPlayNext}
@@ -182,12 +187,12 @@ const PlayerContent: React.FC<PlayerContentProps> = ({ song, songUrl }) => {
           />
         </div>
         <div className="flex justify-center items-center gap-x-3">
-          <span className="text-xs">{currentTime}</span>
+          <span className="text-xs w-[40px]">{currentTime}</span>
           <Slider
             value={seekerValue}
             onChange={(current) => handleSeekerChange(current)}
           />
-          <span className="text-xs">{formatTime(duration || 0)}</span>
+          <span className="text-xs w-[40px]">{formatTime(duration || 0)}</span>
         </div>
       </div>
       <div className="hidden md:flex justify-end pr-2">
