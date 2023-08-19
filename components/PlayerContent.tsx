@@ -19,6 +19,9 @@ const PlayerContent: React.FC<PlayerContentProps> = ({ song, songUrl }) => {
   const player = usePlayer();
   const [volume, setVolume] = useState(1);
   const [isPlaying, setIsPlaying] = useState(false);
+  // const [seekerValue, setSeekerValue] = useState(0);
+  // const [currentTime, setCurrentTime] = useState('00:00');
+  // icons
   const Icon = isPlaying ? BsPauseFill : BsPlayFill;
   const VolumeIcon = volume === 0 ? HiSpeakerXMark : HiSpeakerWave;
 
@@ -45,49 +48,45 @@ const PlayerContent: React.FC<PlayerContentProps> = ({ song, songUrl }) => {
     }
 
     const currentIndex = player.ids.findIndex((id) => id === player.activeId);
-    const prevoiusSong = player.ids[currentIndex - 1];
+    const previousSong = player.ids[currentIndex - 1];
 
-    if (!prevoiusSong) {
+    if (!previousSong) {
       return player.setId(player.ids[player.ids.length - 1]);
     }
 
-    player.setId(prevoiusSong);
+    player.setId(previousSong);
   };
 
   // play sound
-  const [play, { pause, sound }] = useSound(songUrl, {
+
+  const [play, { duration, pause, sound, ['seek']}] = useSound(songUrl, {
     volume: volume,
-    // sprite: { song: [10, 100] },
-    onplay: (value: any) => {
+    onplay: () => {
       setIsPlaying(true);
-      console.log("onplay", value);
+      console.log('onplaying duration', sound._duration,);
+
+
+    }, onplaying: () => {
+
     },
-    onpause: (value: any) => {
+    onpause: () => {
       setIsPlaying(false);
-      console.log("onpause", value);
     },
     onend: () => {
       setIsPlaying(false);
       onPlayNext();
     },
-    // onpause: () => setIsPlaying(false),
-    onseek: () => {},
+    onseek: () => {
+      console.log("seekkkkkkkkkkk");
+    },
     format: ["mp3"],
   });
-  const testSong = useSound(songUrl);
-  console.log("useSond", sound);
-  useEffect(() => {
-    sound?.play();
-
-    return () => {
-      sound?.unload();
-    };
-  }, [sound]);
 
   // play function
   const handlePlay = () => {
     if (!isPlaying) {
       play();
+      console.log(sound._sounds[0]._seek);
     } else {
       pause();
     }
@@ -102,6 +101,38 @@ const PlayerContent: React.FC<PlayerContentProps> = ({ song, songUrl }) => {
       setVolume(0);
     }
   };
+
+  // seek
+  const handleSeekerChange = (seekTime: number) => {
+    // Seek the audio to the desired position when the user changes the seeker
+    const seekPosition = sound.duration() * (seekTime / 100);
+    sound.seek(seekPosition);
+    // setCurrentTime(formatTime(seekPosition));
+  };
+
+  const updateSeekerAndTime = () => {
+    // Update the seeker position and time display as the audio plays
+    console.log('seek realtime', sound._sounds[0]._seek);
+
+    // const currentTimeInSeconds = sound._sounds[0]._seek || 0;
+    // setSeekerValue((currentTimeInSeconds / sound.duration()) * 100);
+    // setCurrentTime(formatTime(currentTimeInSeconds));
+  };
+
+  const formatTime = (timeInSeconds: number) => {
+    const minutes = Math.floor(timeInSeconds / 60);
+    const seconds = Math.floor(timeInSeconds % 60);
+    return `${minutes.toString().padStart(2, '0')}:${seconds.toString().padStart(2, '0')}`;
+  };
+
+  // useEffect(() => {
+  //   // Update the audio seeker and time display as the audio plays
+  //   const interval = setInterval(updateSeekerAndTime, 100);
+
+  //   return () => {
+  //     clearInterval(interval);
+  //   };
+  // }, []);
 
   return (
     <div className="grid grid-cols-2 md:grid-cols-3 h-full">
@@ -119,23 +150,30 @@ const PlayerContent: React.FC<PlayerContentProps> = ({ song, songUrl }) => {
           <Icon size={30} className="text-black" />
         </div>
       </div>
-      <div className="hidden md:flex h-full justify-center items-center w-full max-w-[722px] gap-x-6">
-        <AiFillStepBackward
-          onClick={onPlayPrevious}
-          size={30}
-          className="text-nuetral-400 cursor-pointer hover:text-white transition"
-        />
-        <div
-          onClick={handlePlay}
-          className="flex items-center justify-center h-10 w-10 rounded-full bg-white p-1 cursor-pointer"
-        >
-          <Icon size={30} className="text-black" />
+      <div className="hidden md:block h-full text-center w-full max-w-[722px]">
+        <div className="w-100 flex justify-center items-center gap-x-6">
+          <AiFillStepBackward
+            onClick={onPlayPrevious}
+            size={30}
+            className="text-neutral-400 cursor-pointer hover:text-white transition"
+          />
+          <div
+            onClick={handlePlay}
+            className="flex items-center justify-center h-10 w-10 rounded-full bg-white p-1 cursor-pointer"
+          >
+            <Icon size={30} className="text-black" />
+          </div>
+          <AiFillStepForward
+            onClick={onPlayNext}
+            size={30}
+            className="text-neutral-400 cursor-pointer hover:text-white transition"
+          />
         </div>
-        <AiFillStepForward
-          onClick={onPlayNext}
-          size={30}
-          className="text-nuetral-400 cursor-pointer hover:text-white transition"
-        />
+        <div className="flex justify-center items-center gap-x-3">
+          {/* <span className="text-xs">{currentTime}</span> */}
+          {/* <Slider value={seekerValue} onChange={(current) => handleSeekerChange(current)} /> */}
+          <span className="text-xs">{'99:99' /*formatTime(sound.duration())*/}</span>
+        </div>
       </div>
       <div className="hidden md:flex justify-end pr-2">
         <div className="flex items-center gap-x-2 w-[120px]">
