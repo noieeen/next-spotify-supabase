@@ -19,8 +19,9 @@ const PlayerContent: React.FC<PlayerContentProps> = ({ song, songUrl }) => {
   const player = usePlayer();
   const [volume, setVolume] = useState(1);
   const [isPlaying, setIsPlaying] = useState(false);
-  // const [seekerValue, setSeekerValue] = useState(0);
-  // const [currentTime, setCurrentTime] = useState('00:00');
+  const [seekerValue, setSeekerValue] = useState(0);
+  const [currentTime, setCurrentTime] = useState("00:00");
+  const [playingId, setPlayingId] = useState(0);
   // icons
   const Icon = isPlaying ? BsPauseFill : BsPlayFill;
   const VolumeIcon = volume === 0 ? HiSpeakerXMark : HiSpeakerWave;
@@ -59,16 +60,13 @@ const PlayerContent: React.FC<PlayerContentProps> = ({ song, songUrl }) => {
 
   // play sound
 
-  const [play, { duration, pause, sound, ['seek']}] = useSound(songUrl, {
+  const [play, { duration, pause, sound }] = useSound(songUrl, {
     volume: volume,
-    onplay: () => {
+    onplay: (id: number) => {
       setIsPlaying(true);
-      console.log('onplaying duration', sound._duration,);
-
-
-    }, onplaying: () => {
-
+      setPlayingId(id);
     },
+    onplaying: () => {},
     onpause: () => {
       setIsPlaying(false);
     },
@@ -76,9 +74,7 @@ const PlayerContent: React.FC<PlayerContentProps> = ({ song, songUrl }) => {
       setIsPlaying(false);
       onPlayNext();
     },
-    onseek: () => {
-      console.log("seekkkkkkkkkkk");
-    },
+    onseek: () => {},
     format: ["mp3"],
   });
 
@@ -86,7 +82,6 @@ const PlayerContent: React.FC<PlayerContentProps> = ({ song, songUrl }) => {
   const handlePlay = () => {
     if (!isPlaying) {
       play();
-      console.log(sound._sounds[0]._seek);
     } else {
       pause();
     }
@@ -105,34 +100,40 @@ const PlayerContent: React.FC<PlayerContentProps> = ({ song, songUrl }) => {
   // seek
   const handleSeekerChange = (seekTime: number) => {
     // Seek the audio to the desired position when the user changes the seeker
-    const seekPosition = sound.duration() * (seekTime / 100);
+    if (!duration) return;
+    console.log("on seek", (duration * seekTime) / 1000);
+
+    const seekPosition = (duration * seekTime) / 1000;
     sound.seek(seekPosition);
-    // setCurrentTime(formatTime(seekPosition));
-  };
-
-  const updateSeekerAndTime = () => {
-    // Update the seeker position and time display as the audio plays
-    console.log('seek realtime', sound._sounds[0]._seek);
-
-    // const currentTimeInSeconds = sound._sounds[0]._seek || 0;
-    // setSeekerValue((currentTimeInSeconds / sound.duration()) * 100);
-    // setCurrentTime(formatTime(currentTimeInSeconds));
   };
 
   const formatTime = (timeInSeconds: number) => {
-    const minutes = Math.floor(timeInSeconds / 60);
-    const seconds = Math.floor(timeInSeconds % 60);
-    return `${minutes.toString().padStart(2, '0')}:${seconds.toString().padStart(2, '0')}`;
+    const inputSecond = timeInSeconds / 1000;
+    const minutes = Math.floor(inputSecond / 60);
+    const seconds = Math.floor(inputSecond % 60);
+    return `${minutes.toString().padStart(2, "0")}:${seconds
+      .toString()
+      .padStart(2, "0")}`;
   };
 
-  // useEffect(() => {
-  //   // Update the audio seeker and time display as the audio plays
-  //   const interval = setInterval(updateSeekerAndTime, 100);
+  const updateSeekerAndTime = () => {
+    let currentTime = 0;
+    if (sound && isPlaying && duration) {
+      currentTime = sound.seek(playingId);
+      setCurrentTime(formatTime(currentTime * 1000));
+      setSeekerValue((currentTime / duration) * 1000);
+      console.log("updateSeekerAndTime", (currentTime / duration) * 1000);
+    }
+  };
 
-  //   return () => {
-  //     clearInterval(interval);
-  //   };
-  // }, []);
+  // Update the audio seeker and time display as the audio plays
+  useEffect(() => {
+    const interval = setInterval(updateSeekerAndTime, 100);
+
+    return () => {
+      clearInterval(interval);
+    };
+  });
 
   return (
     <div className="grid grid-cols-2 md:grid-cols-3 h-full">
@@ -170,9 +171,12 @@ const PlayerContent: React.FC<PlayerContentProps> = ({ song, songUrl }) => {
           />
         </div>
         <div className="flex justify-center items-center gap-x-3">
-          {/* <span className="text-xs">{currentTime}</span> */}
-          {/* <Slider value={seekerValue} onChange={(current) => handleSeekerChange(current)} /> */}
-          <span className="text-xs">{'99:99' /*formatTime(sound.duration())*/}</span>
+          <span className="text-xs">{currentTime}</span>
+          <Slider
+            value={seekerValue}
+            onChange={(current) => handleSeekerChange(current)}
+          />
+          <span className="text-xs">{formatTime(duration || 0)}</span>
         </div>
       </div>
       <div className="hidden md:flex justify-end pr-2">
