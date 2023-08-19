@@ -31,7 +31,7 @@ const PlayerContent: React.FC<PlayerContentProps> = ({ song, songUrl }) => {
 
   // next song
   const onPlayNext = () => {
-    sound.unload();
+    if (sound) sound.unload();
 
     if (player.ids.length === 0) {
       return;
@@ -49,7 +49,7 @@ const PlayerContent: React.FC<PlayerContentProps> = ({ song, songUrl }) => {
 
   // previous
   const onPlayPrevious = () => {
-    sound.unload();
+    if (sound) sound.unload();
     if (player.ids.length === 0) {
       return;
     }
@@ -127,6 +127,15 @@ const PlayerContent: React.FC<PlayerContentProps> = ({ song, songUrl }) => {
       setSeekerValue((currentTime / duration) * 1000);
     }
   };
+
+  // Play sound when sound already playing
+  useEffect(() => {
+    sound?.play();
+
+    return () => {
+      sound?.unload();
+    };
+  }, [sound]);
 
   // Update the audio seeker and time display as the audio plays
   useEffect(() => {
