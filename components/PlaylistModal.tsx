@@ -1,4 +1,4 @@
-import useUploadModal from "@/hooks/useUploadModal";
+import usePlaylistModal from "@/hooks/usePlaylistModal";
 import Modal from "./Modal";
 import { FieldValues, SubmitHandler, useForm } from "react-hook-form";
 import { useState } from "react";
@@ -10,9 +10,9 @@ import uniqid from "uniqid";
 import { useSupabaseClient } from "@supabase/auth-helpers-react";
 import { useRouter } from "next/navigation";
 
-const UploadModal = () => {
+const PlaylistModal = () => {
   const [isLoading, setIsLoading] = useState(false);
-  const uploadModal = useUploadModal();
+  const playlistModal = usePlaylistModal();
   const { user } = useUser();
   const supabaseClient = useSupabaseClient();
   const router = useRouter();
@@ -29,7 +29,7 @@ const UploadModal = () => {
   const onChange = (isOpen: boolean) => {
     if (!isOpen) {
       reset();
-      uploadModal.onClose();
+      playlistModal.onClose();
     }
   };
 
@@ -95,7 +95,7 @@ const UploadModal = () => {
       setIsLoading(false);
       toast.success("Song created!");
       reset();
-      uploadModal.onClose();
+      playlistModal.onClose();
     } catch (error) {
       toast.error("Somgthing went wrong!");
     } finally {
@@ -107,7 +107,7 @@ const UploadModal = () => {
     <Modal
       title="Add a song"
       description="Upload an mp3 file"
-      isOpen={uploadModal.isOpen}
+      isOpen={playlistModal.isOpen}
       onChange={onChange}
     >
       <form onSubmit={handleSubmit(onSubmit)} className="flex flex-col gap-y-4">
@@ -153,4 +153,4 @@ const UploadModal = () => {
   );
 };
 
-export default UploadModal;
+export default PlaylistModal;
